@@ -42,7 +42,7 @@ class LoginActivity : ComponentActivity() {
                     TokenManager.saveUserId(response.userId)
                     Log.d("GameHub", "Login success, token saved")
 
-                    WebSocketManager.connect()
+//                    WebSocketManager.connect()
 
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     finish()

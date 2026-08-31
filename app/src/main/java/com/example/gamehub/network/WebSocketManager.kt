@@ -14,6 +14,8 @@ object WebSocketManager {
 
     private var privateMessageCallback: ((String) -> Unit)? = null
     private var messageDisposable: io.reactivex.disposables.Disposable? = null
+
+    private var friendRequestCallback: ((String) -> Unit)? = null
     private var friendRequestDisposable: io.reactivex.disposables.Disposable? = null
 
     fun connect() {
@@ -31,10 +33,16 @@ object WebSocketManager {
 
         stompClient?.connect(headers)
 
-        stompClient?.lifecycle()?.subscribe { event ->
+        if (messageDisposable?.isDisposed == false) {
+            Log.d("GameHub", "Already subscribed to private messages")
+            return
+        }
+
+        messageDisposable = stompClient?.lifecycle()?.subscribe { event ->
             when (event.type) {
                 LifecycleEvent.Type.OPENED -> {
                     subscribePrivateMessagesInternal()
+                    subscribeFriendRequestsInternal()
 
                     Log.d("GameHub", "WebSocket connected")
                 }
@@ -46,16 +54,13 @@ object WebSocketManager {
     }
 
     private fun subscribePrivateMessagesInternal() {
-        if (messageDisposable?.isDisposed == false) {
-            Log.d("GameHub", "Already subscribed to private messages")
-            return
-        }
+
         val topic = stompClient?.topic("/user/queue/messages")
 
         Log.d("GameHub", "stompClient = $stompClient")
         Log.d("GameHub", "topic = $topic")
 
-        messageDisposable = topic?.subscribe { message ->
+        messageDisposable = topic?.subscribe ({ message ->
 
             Log.d(
                 "GameHub",
@@ -65,7 +70,14 @@ object WebSocketManager {
             privateMessageCallback?.invoke(
                 message.payload
             )
-        }
+        },
+        { error ->
+            Log.e(
+                "GameHub",
+                "Subscription error",
+                error
+            )
+        })
 
         Log.d("GameHub", "messageDisposable = $messageDisposable")
 
@@ -73,9 +85,7 @@ object WebSocketManager {
     fun subscribePrivateMessages(onMessage: (String) -> Unit) {
         privateMessageCallback = onMessage
 
-        if (stompClient?.isConnected == true) {
-            subscribePrivateMessagesInternal()
-        } else {
+        if (stompClient?.isConnected == false) {
             connect()
         }
     }
@@ -100,10 +110,32 @@ object WebSocketManager {
             )
     }
 
+    private fun subscribeFriendRequestsInternal() {
+        if (friendRequestDisposable?.isDisposed == false) {
+            Log.d("GameHub", "Already subscribed to friend requests")
+            return
+        }
+
+        val topic = stompClient?.topic("/user/queue/friend-request")
+
+        friendRequestDisposable = topic?.subscribe(
+            { message ->
+                Log.d("GameHub", "Received friend request: ${message.payload}")
+                friendRequestCallback?.invoke(message.payload)
+            },
+            { error ->
+                Log.e("GameHub", "Friend request subscription error", error)
+            }
+        )
+
+        Log.d("GameHub", "friendRequestDisposable = $friendRequestDisposable")
+    }
+
     fun subscribeFriendRequests(onFriendRequest: (String) -> Unit) {
-        friendRequestDisposable?.dispose()
-        friendRequestDisposable = stompClient?.topic("/user/queue/friend-request")?.subscribe { message ->
-            onFriendRequest(message.payload)
+        friendRequestCallback = onFriendRequest
+
+        if (stompClient?.isConnected == false) {
+            connect()
         }
     }
 

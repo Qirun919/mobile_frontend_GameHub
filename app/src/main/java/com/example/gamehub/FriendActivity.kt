@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -117,21 +118,21 @@ class FriendsActivity : ComponentActivity() {
                     val itemView = layoutInflater.inflate(android.R.layout.simple_list_item_2, containerFriends, false)
                     val text1 = itemView.findViewById<TextView>(android.R.id.text1)
                     val text2 = itemView.findViewById<TextView>(android.R.id.text2)
+                    val buttonAccept = itemView.findViewById<ImageButton>(R.id.buttonAccept)
+                    val buttonReject = itemView.findViewById<ImageButton>(R.id.buttonReject)
 
                     text1.text = displayName
                     text2.text = "Status: ${friendship.status}"
 
                     if (friendship.status == "pending" && friendship.friendId == myUserId) {
                         text2.text = "Status: pending (tap to accept)"
-                        itemView.setOnClickListener {
+                        buttonAccept.visibility = android.view.View.VISIBLE
+                        buttonReject.visibility = android.view.View.VISIBLE
+                        buttonAccept.setOnClickListener {
                             acceptFriend(friendship)
                         }
-                    }
-
-                    if (friendship.status == "pending" && friendship.friendId == myUserId) {
-                        text2.text = "Status: pending (tap to accept)"
-                        itemView.setOnClickListener {
-                            acceptFriend(friendship)
+                        buttonReject.setOnClickListener {
+                            rejectFriend(friendship)
                         }
                     } else if (friendship.status == "accepted") {
                         itemView.setOnClickListener {
@@ -160,6 +161,17 @@ class FriendsActivity : ComponentActivity() {
                 loadFriends()
             } catch (e: Exception) {
                 Log.e("GameHub", "Accept friend failed: ${e.message}")
+            }
+        }
+    }
+    private fun rejectFriend(friendship: Friendship) {
+        lifecycleScope.launch {
+            try {
+                RetrofitInstance.api.deleteFriendship(friendship.id)
+                Log.d("GameHub", "Friend request rejected")
+                loadFriends()
+            } catch (e: Exception) {
+                Log.e("GameHub", "Reject friend failed: ${e.message}")
             }
         }
     }
