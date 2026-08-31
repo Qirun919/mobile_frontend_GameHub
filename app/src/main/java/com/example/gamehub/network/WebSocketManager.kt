@@ -18,6 +18,11 @@ object WebSocketManager {
     private var friendRequestCallback: ((String) -> Unit)? = null
     private var friendRequestDisposable: io.reactivex.disposables.Disposable? = null
 
+    // community server
+    private var groupMessageCallback: ((String) -> Unit)? = null
+    private var groupMessageDisposable: io.reactivex.disposables.Disposable? = null
+    private var currentServerId: String? = null
+
     fun connect() {
         if (stompClient?.isConnected == true) {
             Log.d("GameHub", "WebSocket already connected")
@@ -43,6 +48,7 @@ object WebSocketManager {
                 LifecycleEvent.Type.OPENED -> {
                     subscribePrivateMessagesInternal()
                     subscribeFriendRequestsInternal()
+                    subscribeGroupMessagesInternal()
 
                     Log.d("GameHub", "WebSocket connected")
                 }
@@ -137,6 +143,46 @@ object WebSocketManager {
         if (stompClient?.isConnected == false) {
             connect()
         }
+    }
+
+
+    // community server
+    fun subscribeGroupMessages(serverId: String, onMessage: (String) -> Unit) {
+        currentServerId = serverId
+        groupMessageCallback = onMessage
+
+        if (stompClient?.isConnected == false) {
+            connect()
+        } else {
+            subscribeGroupMessagesInternal()
+        }
+    }
+
+    private fun subscribeGroupMessagesInternal() {
+        val serverId = currentServerId ?: return
+        groupMessageDisposable?.dispose()
+
+        val topic = stompClient?.topic("/topic/server/$serverId")
+        groupMessageDisposable = topic?.subscribe(
+            { message ->
+                Log.d("GameHub", "Received group message: ${message.payload}")
+                groupMessageCallback?.invoke(message.payload)
+            },
+            { error ->
+                Log.e("GameHub", "Group message subscription error", error)
+            }
+        )
+    }
+
+    fun sendGroupMessage(senderId: String, serverId: String, content: String) {
+        val messageJson = gson.toJson(
+            mapOf(
+                "senderId" to senderId,
+                "serverId" to serverId,
+                "content" to content
+            )
+        )
+        stompClient?.send("/app/chat.group", messageJson)?.subscribe()
     }
 
     fun ensureConnected() {

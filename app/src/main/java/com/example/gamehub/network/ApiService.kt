@@ -1,6 +1,8 @@
 package com.example.gamehub.network
 
 import com.example.gamehub.models.AddFriendRequest
+import com.example.gamehub.models.CommunityServer
+import com.example.gamehub.models.CreateServerRequest
 import com.example.gamehub.models.Friendship
 import com.example.gamehub.models.Game
 import com.example.gamehub.models.LoginRequest
@@ -56,11 +58,27 @@ interface ApiService {
     @DELETE("friendships/{id}")
     suspend fun deleteFriendship(@Path("id") id: String)
 
-    // Friend
+
+    // Friend chat
 
     @GET("messages/private/{userId1}/{userId2}")
     suspend fun getPrivateMessages(
         @Path("userId1") userId1: String,
         @Path("userId2") userId2: String
     ): List<Message>
+
+
+    // community server
+
+    @GET("servers")
+    suspend fun getServers(): List<CommunityServer>
+
+    @GET("servers/{id}")
+    suspend fun getServerById(@Path("id") id: String): CommunityServer
+
+    @POST("servers")
+    suspend fun createServer(@Body request: CreateServerRequest): CommunityServer
+
+    @POST("servers/{serverId}/join/{userId}")
+    suspend fun joinServer(@Path("serverId") serverId: String, @Path("userId") userId: String): CommunityServer
 }
