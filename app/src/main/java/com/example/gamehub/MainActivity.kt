@@ -67,9 +67,11 @@ class MainActivity : ComponentActivity() {
                     true
                 }
                 R.id.nav_community -> {
+                    startActivity(Intent(this, CommunityActivity::class.java))
                     true
                 }
                 R.id.nav_profile -> {
+                    startActivity(Intent(this, ProfileActivity::class.java))
                     true
                 }
                 else -> false
