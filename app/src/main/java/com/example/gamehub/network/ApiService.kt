@@ -41,6 +41,9 @@ interface ApiService {
     @GET("users")
     suspend fun getUsers(): List<User>
 
+    @GET("users/{id}")
+    suspend fun getUserById(@Path("id") id: String): User
+
     // friendship
 
     @GET("users/username/{username}")

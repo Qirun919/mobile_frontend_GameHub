@@ -11,6 +11,8 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:scaleType="centerCrop"
+        android:background="@drawable/circle_background"
+        android:clipToOutline="true"
         android:layout_marginTop="16dp" />
 
     <TextView
@@ -79,25 +81,11 @@
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/editAvatarUrl"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Avatar image URL"
-        android:layout_marginTop="24dp" />
-
-    <Button
-        android:id="@+id/buttonUpdateAvatar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Update Avatar"
-        android:layout_marginTop="8dp" />
-
     <TextView
         android:id="@+id/textError"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#FF0000"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="16dp" />
 
 </LinearLayout>
