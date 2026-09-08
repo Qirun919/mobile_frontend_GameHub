@@ -91,4 +91,7 @@ dependencies {
 
     // image (imgbb)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // for the fragment (one activity got many fragment)
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
 }

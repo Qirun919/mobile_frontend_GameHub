@@ -1,24 +1,28 @@
-package com.example.gamehub
+package com.example.gamehub.fragment
 
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.gamehub.GroupChatActivity
+import com.example.gamehub.R
 import com.example.gamehub.models.CommunityServer
 import com.example.gamehub.models.CreateServerRequest
 import com.example.gamehub.network.RetrofitInstance
 import com.example.gamehub.network.TokenManager
 import kotlinx.coroutines.launch
 
-class CommunityActivity : ComponentActivity() {
+class CommunityFragment : Fragment() {
 
     private lateinit var containerServers: LinearLayout
     private var allServers: List<CommunityServer> = emptyList()
@@ -26,16 +30,23 @@ class CommunityActivity : ComponentActivity() {
     private lateinit var editSearchServer: EditText
     private var currentTab = "my_groups"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_community)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_community, container, false)
+    }
 
-        containerServers = findViewById(R.id.containerServers)
-        textError = findViewById(R.id.textError)
-        editSearchServer = findViewById(R.id.editSearchServer)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val buttonTabMyGroups = findViewById<Button>(R.id.buttonTabMyGroups)
-        val buttonTabDiscover = findViewById<Button>(R.id.buttonTabDiscover)
+        containerServers = view.findViewById(R.id.containerServers)
+        textError = view.findViewById(R.id.textError)
+        editSearchServer = view.findViewById(R.id.editSearchServer)
+
+        val buttonTabMyGroups = view.findViewById<Button>(R.id.buttonTabMyGroups)
+        val buttonTabDiscover = view.findViewById<Button>(R.id.buttonTabDiscover)
 
         buttonTabMyGroups.setOnClickListener {
             currentTab = "my_groups"
@@ -103,7 +114,7 @@ class CommunityActivity : ComponentActivity() {
                 .filter { it.name.contains(searchQuery, ignoreCase = true) }
 
             if (availableServers.isEmpty()) {
-                val emptyText = TextView(this)
+                val emptyText = TextView(requireContext())
                 emptyText.text = "No groups found"
                 emptyText.setPadding(12, 24, 12, 12)
                 containerServers.addView(emptyText)
@@ -117,7 +128,7 @@ class CommunityActivity : ComponentActivity() {
                 )
                 itemView.findViewById<TextView>(android.R.id.text1).text = server.name
                 itemView.findViewById<TextView>(android.R.id.text2).text =
-                    "${server.userIds.size} members · Tap to join"
+                    "${server.userIds.size} members - Tap to join"
                 itemView.setOnClickListener {
                     joinServer(server)
                 }
@@ -135,10 +146,10 @@ class CommunityActivity : ComponentActivity() {
     }
 
     private fun showCreateGroupDialog() {
-        val input = EditText(this)
+        val input = EditText(requireContext())
         input.hint = "Group name"
 
-        android.app.AlertDialog.Builder(this)
+        android.app.AlertDialog.Builder(requireContext())
             .setTitle("Create a Group Chat")
             .setView(input)
             .setPositiveButton("Create") { _, _ ->
@@ -187,7 +198,7 @@ class CommunityActivity : ComponentActivity() {
     }
 
     private fun openGroupChat(server: CommunityServer) {
-        val intent = Intent(this, GroupChatActivity::class.java)
+        val intent = Intent(requireContext(), GroupChatActivity::class.java)
         intent.putExtra("server_id", server.id)
         intent.putExtra("server_name", server.name)
         startActivity(intent)

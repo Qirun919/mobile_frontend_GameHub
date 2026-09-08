@@ -42,25 +42,12 @@
             android:exported="false"
             android:theme="@style/Theme.GameHub" />
 
-        <activity
-            android:name=".FriendsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.GameHub" />
 
         <activity
             android:name=".ChatActivity"
             android:exported="false"
             android:theme="@style/Theme.GameHub" />
 
-        <activity
-            android:name=".CommunityActivity"
-            android:exported="false"
-            android:theme="@style/Theme.GameHub" />
-
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false"
-            android:theme="@style/Theme.GameHub" />
 
         <activity
             android:name=".GroupChatActivity"

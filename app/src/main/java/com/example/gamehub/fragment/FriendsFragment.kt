@@ -1,18 +1,21 @@
-package com.example.gamehub
+package com.example.gamehub.fragment
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import coil.load
+import com.example.gamehub.ChatActivity
+import com.example.gamehub.R
 import com.example.gamehub.models.AddFriendRequest
 import com.example.gamehub.models.Friendship
 import com.example.gamehub.models.UpdateFriendRequest
@@ -21,25 +24,31 @@ import com.example.gamehub.network.TokenManager
 import com.example.gamehub.network.WebSocketManager
 import kotlinx.coroutines.launch
 
-class FriendsActivity : ComponentActivity() {
+class FriendsFragment : Fragment() {
 
     private lateinit var containerFriends: LinearLayout
     private lateinit var textError: TextView
-
     private var currentTab = "friends"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_friends)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_friends, container, false)
+    }
 
-        containerFriends = findViewById(R.id.containerFriends)
-        textError = findViewById(R.id.textError)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val editFriendId = findViewById<EditText>(R.id.editFriendId)
-        val buttonAddFriend = findViewById<Button>(R.id.buttonAddFriend)
+        containerFriends = view.findViewById(R.id.containerFriends)
+        textError = view.findViewById(R.id.textError)
 
-        val buttonTabFriends = findViewById<Button>(R.id.buttonTabFriends)
-        val buttonTabRequests = findViewById<Button>(R.id.buttonTabRequests)
+        val editFriendId = view.findViewById<EditText>(R.id.editFriendId)
+        val buttonAddFriend = view.findViewById<Button>(R.id.buttonAddFriend)
+
+        val buttonTabFriends = view.findViewById<Button>(R.id.buttonTabFriends)
+        val buttonTabRequests = view.findViewById<Button>(R.id.buttonTabRequests)
 
         buttonTabFriends.setOnClickListener {
             currentTab = "friends"
@@ -60,13 +69,6 @@ class FriendsActivity : ComponentActivity() {
             addFriend(friendUsername)
         }
 
-        WebSocketManager.subscribeFriendRequests {
-            runOnUiThread {
-                Log.d("GameHub", "New friend request received!")
-                loadFriends()
-            }
-        }
-
         loadFriends()
     }
 
@@ -78,7 +80,7 @@ class FriendsActivity : ComponentActivity() {
 
     private fun subscribeToFriendRequests() {
         WebSocketManager.subscribeFriendRequests {
-            runOnUiThread {
+            activity?.runOnUiThread {
                 Log.d("GameHub", "New friend request received!")
                 loadFriends()
             }
@@ -131,7 +133,7 @@ class FriendsActivity : ComponentActivity() {
                     val pending = friendships.filter { it.status == "pending" && it.friendId == myUserId }
 
                     if (pending.isEmpty()) {
-                        val emptyText = TextView(this@FriendsActivity)
+                        val emptyText = TextView(requireContext())
                         emptyText.text = "No pending requests"
                         emptyText.setPadding(12, 24, 12, 12)
                         containerFriends.addView(emptyText)
@@ -171,7 +173,7 @@ class FriendsActivity : ComponentActivity() {
                     }.sortedByDescending { it.second.online }
 
                     if (acceptedWithUser.isEmpty()) {
-                        val emptyText = TextView(this@FriendsActivity)
+                        val emptyText = TextView(requireContext())
                         emptyText.text = "No friends yet"
                         emptyText.setPadding(12, 24, 12, 12)
                         containerFriends.addView(emptyText)
@@ -193,7 +195,7 @@ class FriendsActivity : ComponentActivity() {
                         }
 
                         itemView.setOnClickListener {
-                            val chatIntent = Intent(this@FriendsActivity, ChatActivity::class.java)
+                            val chatIntent = Intent(requireContext(), ChatActivity::class.java)
                             chatIntent.putExtra("friend_id", otherUser.id)
                             startActivity(chatIntent)
                         }
@@ -219,6 +221,7 @@ class FriendsActivity : ComponentActivity() {
             }
         }
     }
+
     private fun rejectFriend(friendship: Friendship) {
         lifecycleScope.launch {
             try {

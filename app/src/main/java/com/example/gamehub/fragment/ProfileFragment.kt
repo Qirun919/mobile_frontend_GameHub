@@ -1,16 +1,19 @@
-package com.example.gamehub
+package com.example.gamehub.fragment
 
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import coil.load
-import coil.transform.CircleCropTransformation
+import com.example.gamehub.BuildConfig
+import com.example.gamehub.R
 import com.example.gamehub.network.RetrofitInstance
 import com.example.gamehub.network.TokenManager
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +27,7 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 
-class ProfileActivity : ComponentActivity() {
+class ProfileFragment : Fragment() {
 
     private lateinit var imageAvatar: ImageView
     private lateinit var textError: TextView
@@ -36,20 +39,24 @@ class ProfileActivity : ComponentActivity() {
         uri?.let { uploadImage(it) }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_profile)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_profile, container, false)
+    }
 
-        imageAvatar = findViewById(R.id.imageAvatar)
-        val textUsername = findViewById<TextView>(R.id.textUsername)
-        val textEmail = findViewById<TextView>(R.id.textEmail)
-        textError = findViewById(R.id.textError)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
+        imageAvatar = view.findViewById(R.id.imageAvatar)
+        textError = view.findViewById(R.id.textError)
 
         imageAvatar.clipToOutline = true
         imageAvatar.outlineProvider = object : android.view.ViewOutlineProvider() {
-            override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
-                outline.setOval(0, 0, view.width, view.height)
+            override fun getOutline(v: android.view.View, outline: android.graphics.Outline) {
+                outline.setOval(0, 0, v.width, v.height)
             }
         }
 
@@ -68,12 +75,14 @@ class ProfileActivity : ComponentActivity() {
 
     private fun loadProfile() {
         val userId = myUserId ?: return
+        val view = view ?: return
+
         lifecycleScope.launch {
             try {
                 val user = RetrofitInstance.api.getUserById(userId)
                 Log.d("GameHub", "avatarUrl from server: ${user.avatarUrl}")
-                findViewById<TextView>(R.id.textUsername).text = user.username
-                findViewById<TextView>(R.id.textEmail).text = user.email
+                view.findViewById<TextView>(R.id.textUsername).text = user.username
+                view.findViewById<TextView>(R.id.textEmail).text = user.email
 
                 if (user.avatarUrl.isNullOrEmpty()) {
                     imageAvatar.setImageResource(android.R.drawable.ic_menu_gallery)
@@ -90,20 +99,22 @@ class ProfileActivity : ComponentActivity() {
     }
 
     private fun loadStats(userId: String) {
+        val view = view ?: return
+
         lifecycleScope.launch {
             try {
                 val ownedGames = RetrofitInstance.api.getOwnedGames(userId)
-                findViewById<TextView>(R.id.textGameCount).text = ownedGames.size.toString()
+                view.findViewById<TextView>(R.id.textGameCount).text = ownedGames.size.toString()
             } catch (e: Exception) {
-                findViewById<TextView>(R.id.textGameCount).text = "0"
+                view.findViewById<TextView>(R.id.textGameCount).text = "0"
             }
 
             try {
                 val friendships = RetrofitInstance.api.getFriendships(userId)
                 val acceptedCount = friendships.count { it.status == "accepted" }
-                findViewById<TextView>(R.id.textFriendCount).text = acceptedCount.toString()
+                view.findViewById<TextView>(R.id.textFriendCount).text = acceptedCount.toString()
             } catch (e: Exception) {
-                findViewById<TextView>(R.id.textFriendCount).text = "0"
+                view.findViewById<TextView>(R.id.textFriendCount).text = "0"
             }
         }
     }
@@ -136,8 +147,9 @@ class ProfileActivity : ComponentActivity() {
     }
 
     private fun uploadToImgbb(uri: Uri): String? {
-        val inputStream = contentResolver.openInputStream(uri) ?: return null
-        val tempFile = File(cacheDir, "upload_temp.jpg")
+        val context = requireContext()
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val tempFile = File(context.cacheDir, "upload_temp.jpg")
         FileOutputStream(tempFile).use { output ->
             inputStream.copyTo(output)
         }
