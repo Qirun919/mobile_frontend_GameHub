@@ -1,7 +1,11 @@
 package com.example.gamehub
 
+import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -17,7 +21,10 @@ import kotlinx.coroutines.launch
 class CommunityActivity : ComponentActivity() {
 
     private lateinit var containerServers: LinearLayout
+    private var allServers: List<CommunityServer> = emptyList()
     private lateinit var textError: TextView
+    private lateinit var editSearchServer: EditText
+    private var currentTab = "my_groups"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,20 +32,123 @@ class CommunityActivity : ComponentActivity() {
 
         containerServers = findViewById(R.id.containerServers)
         textError = findViewById(R.id.textError)
+        editSearchServer = findViewById(R.id.editSearchServer)
 
-        val editServerName = findViewById<EditText>(R.id.editServerName)
-        val buttonCreateServer = findViewById<Button>(R.id.buttonCreateServer)
+        val buttonTabMyGroups = findViewById<Button>(R.id.buttonTabMyGroups)
+        val buttonTabDiscover = findViewById<Button>(R.id.buttonTabDiscover)
 
-        buttonCreateServer.setOnClickListener {
-            val name = editServerName.text.toString().trim()
-            if (name.isEmpty()) {
-                textError.text = "Please enter a server name"
-                return@setOnClickListener
-            }
-            createServer(name)
+        buttonTabMyGroups.setOnClickListener {
+            currentTab = "my_groups"
+            editSearchServer.visibility = View.GONE
+            renderServers()
         }
 
+        buttonTabDiscover.setOnClickListener {
+            currentTab = "discover"
+            editSearchServer.visibility = View.VISIBLE
+            renderServers()
+        }
+
+        editSearchServer.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                renderServers()
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         loadServers()
+    }
+
+    private fun loadServers() {
+        lifecycleScope.launch {
+            try {
+                allServers = RetrofitInstance.api.getServers()
+                Log.d("GameHub", "Loaded ${allServers.size} total servers")
+                renderServers()
+            } catch (e: Exception) {
+                Log.e("GameHub", "Load servers failed: ${e.message}")
+            }
+        }
+    }
+
+    private fun renderServers() {
+        val myUserId = TokenManager.getUserId() ?: return
+        containerServers.removeAllViews()
+
+        if (currentTab == "my_groups") {
+            val myServers = allServers.filter { it.userIds.contains(myUserId) }
+
+            if (myServers.isEmpty()) {
+                showEmptyState()
+            } else {
+                for (server in myServers) {
+                    val itemView = layoutInflater.inflate(
+                        android.R.layout.simple_list_item_1,
+                        containerServers,
+                        false
+                    )
+                    itemView.findViewById<TextView>(android.R.id.text1).text = server.name
+                    itemView.setOnClickListener {
+                        openGroupChat(server)
+                    }
+                    containerServers.addView(itemView)
+                }
+            }
+
+        } else {
+            val searchQuery = editSearchServer.text.toString()
+            val availableServers = allServers.filter { !it.userIds.contains(myUserId) }
+                .filter { it.name.contains(searchQuery, ignoreCase = true) }
+
+            if (availableServers.isEmpty()) {
+                val emptyText = TextView(this)
+                emptyText.text = "No groups found"
+                emptyText.setPadding(12, 24, 12, 12)
+                containerServers.addView(emptyText)
+            }
+
+            for (server in availableServers) {
+                val itemView = layoutInflater.inflate(
+                    android.R.layout.simple_list_item_2,
+                    containerServers,
+                    false
+                )
+                itemView.findViewById<TextView>(android.R.id.text1).text = server.name
+                itemView.findViewById<TextView>(android.R.id.text2).text =
+                    "${server.userIds.size} members · Tap to join"
+                itemView.setOnClickListener {
+                    joinServer(server)
+                }
+                containerServers.addView(itemView)
+            }
+        }
+    }
+
+    private fun showEmptyState() {
+        val emptyView = layoutInflater.inflate(R.layout.item_empty_community, containerServers, false)
+        emptyView.findViewById<Button>(R.id.buttonCreateGroup).setOnClickListener {
+            showCreateGroupDialog()
+        }
+        containerServers.addView(emptyView)
+    }
+
+    private fun showCreateGroupDialog() {
+        val input = EditText(this)
+        input.hint = "Group name"
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Create a Group Chat")
+            .setView(input)
+            .setPositiveButton("Create") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotEmpty()) {
+                    createServer(name)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun createServer(name: String) {
@@ -76,40 +186,10 @@ class CommunityActivity : ComponentActivity() {
         }
     }
 
-    private fun loadServers() {
-        val myUserId = TokenManager.getUserId() ?: return
-
-        lifecycleScope.launch {
-            try {
-                val servers = RetrofitInstance.api.getServers()
-                containerServers.removeAllViews()
-
-                for (server in servers) {
-                    val itemView = layoutInflater.inflate(android.R.layout.simple_list_item_2, containerServers, false)
-                    val text1 = itemView.findViewById<TextView>(android.R.id.text1)
-                    val text2 = itemView.findViewById<TextView>(android.R.id.text2)
-
-                    text1.text = server.name
-                    val isMember = server.userIds.contains(myUserId)
-                    text2.text = if (isMember) "Joined (tap to open)" else "Tap to join"
-
-                    itemView.setOnClickListener {
-                        if (isMember) {
-                            // 之后加跳转到服务器聊天画面
-                            Log.d("GameHub", "Open server: ${server.name}")
-                        } else {
-                            joinServer(server)
-                        }
-                    }
-
-                    containerServers.addView(itemView)
-                }
-
-                Log.d("GameHub", "Loaded ${servers.size} servers")
-
-            } catch (e: Exception) {
-                Log.e("GameHub", "Load servers failed: ${e.message}")
-            }
-        }
+    private fun openGroupChat(server: CommunityServer) {
+        val intent = Intent(this, GroupChatActivity::class.java)
+        intent.putExtra("server_id", server.id)
+        intent.putExtra("server_name", server.name)
+        startActivity(intent)
     }
 }

@@ -5,32 +5,40 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <TextView
+        android:id="@+id/textError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FF0000" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/editServerName"
+        <Button
+            android:id="@+id/buttonTabMyGroups"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Server name" />
+            android:text="My Groups" />
 
         <Button
-            android:id="@+id/buttonCreateServer"
-            android:layout_width="wrap_content"
+            android:id="@+id/buttonTabDiscover"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Create" />
+            android:layout_weight="1"
+            android:text="Discover" />
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textError"
+    <EditText
+        android:id="@+id/editSearchServer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#FF0000"
-        android:layout_marginTop="8dp" />
+        android:hint="Search groups by name"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/containerServers"

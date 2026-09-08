@@ -86,6 +86,12 @@ interface ApiService {
     suspend fun joinServer(@Path("serverId") serverId: String, @Path("userId") userId: String): CommunityServer
 
 
+    // Community Chat
+
+    @GET("messages/server/{serverId}")
+    suspend fun getServerMessages(@Path("serverId") serverId: String): List<Message>
+
+
     // profile
     @PUT("users/{id}/avatar")
     suspend fun updateAvatar(@Path("id") id: String, @Body body: Map<String, String>): User
