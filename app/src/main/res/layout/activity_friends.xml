@@ -33,6 +33,28 @@
         android:layout_marginTop="8dp" />
 
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/buttonTabFriends"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Friends" />
+
+        <Button
+            android:id="@+id/buttonTabRequests"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Requests" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/containerFriends"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
