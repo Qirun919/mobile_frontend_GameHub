@@ -29,6 +29,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "IMGBB_API_KEY", "\"${localProperties.getProperty("IMGBB_API_KEY")}\"")
+
+        // stripe
+        buildConfigField("String", "STRIPE_PUBLISHABLE_KEY", "\"${localProperties.getProperty("STRIPE_PUBLISHABLE_KEY")}\"")
     }
 
     buildTypes {
@@ -94,4 +97,7 @@ dependencies {
 
     // for the fragment (one activity got many fragment)
     implementation("androidx.fragment:fragment-ktx:1.8.5")
+
+    // payment
+    implementation("com.stripe:stripe-android:21.13.0")
 }

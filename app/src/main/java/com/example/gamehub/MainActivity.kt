@@ -8,12 +8,16 @@ import com.example.gamehub.fragment.FriendsFragment
 import com.example.gamehub.fragment.GamesFragment
 import com.example.gamehub.fragment.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.stripe.android.PaymentConfiguration
+
 
 class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        PaymentConfiguration.init(applicationContext, BuildConfig.STRIPE_PUBLISHABLE_KEY)
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 

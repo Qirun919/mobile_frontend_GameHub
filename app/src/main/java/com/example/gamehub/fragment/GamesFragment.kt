@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -15,10 +16,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.example.gamehub.CartActivity
 import com.example.gamehub.GameAdapter
 import com.example.gamehub.GameDetailsActivity
 import com.example.gamehub.R
 import com.example.gamehub.models.Game
+import com.example.gamehub.network.CartManager
 import com.example.gamehub.network.RetrofitInstance
 import kotlinx.coroutines.launch
 
@@ -48,6 +51,11 @@ class GamesFragment : Fragment() {
         val buttonShowMore = view.findViewById<Button>(R.id.buttonShowMore)
         buttonShowMore.setOnClickListener {
             loadNextPage()
+        }
+
+        val buttonCart = view.findViewById<ImageButton>(R.id.buttonCart)
+        buttonCart.setOnClickListener {
+            startActivity(Intent(requireContext(), CartActivity::class.java))
         }
 
         loadPopularGames(recyclerPopular)
@@ -95,5 +103,22 @@ class GamesFragment : Fragment() {
         val intent = Intent(requireContext(), GameDetailsActivity::class.java)
         intent.putExtra("game_json", gameJson)
         startActivity(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateCartIcon()
+    }
+
+    private fun updateCartIcon() {
+        val badge = view?.findViewById<TextView>(R.id.textCartBadge) ?: return
+        val count = CartManager.getCartCount()
+
+        if (count > 0) {
+            badge.text = count.toString()
+            badge.visibility = View.VISIBLE
+        } else {
+            badge.visibility = View.GONE
+        }
     }
 }

@@ -2,12 +2,14 @@ package com.example.gamehub.network
 
 import com.example.gamehub.models.AddFriendRequest
 import com.example.gamehub.models.CommunityServer
+import com.example.gamehub.models.CreateOrderRequest
 import com.example.gamehub.models.CreateServerRequest
 import com.example.gamehub.models.Friendship
 import com.example.gamehub.models.Game
 import com.example.gamehub.models.LoginRequest
 import com.example.gamehub.models.LoginResponse
 import com.example.gamehub.models.Message
+import com.example.gamehub.models.Order
 import com.example.gamehub.models.SignupRequest
 import com.example.gamehub.models.UpdateFriendRequest
 import com.example.gamehub.models.User
@@ -98,5 +100,19 @@ interface ApiService {
 
     @GET("orders/user/{userId}/games")
     suspend fun getOwnedGames(@Path("userId") userId: String): List<Game>
+
+
+    // order
+    @POST("orders")
+    suspend fun createOrder(@Body request: CreateOrderRequest): Order
+
+    @POST("orders/{id}/payment")
+    suspend fun createPayment(@Path("id") id: String): Order
+
+    @POST("games/batch")
+    suspend fun getGamesByIds(@Body gameIds: List<String>): List<Game>
+
+    @GET("orders/{id}/confirm")
+    suspend fun confirmOrder(@Path("id") id: String): Order
 
 }
