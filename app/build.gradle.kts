@@ -99,5 +99,5 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.8.5")
 
     // payment
-    implementation("com.stripe:stripe-android:21.13.0")
+    implementation("com.stripe:stripe-android:23.18.0")
 }

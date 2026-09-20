@@ -115,4 +115,10 @@ interface ApiService {
     @GET("orders/{id}/confirm")
     suspend fun confirmOrder(@Path("id") id: String): Order
 
+    @GET("games/filter")
+    suspend fun getGamesByGenre(@Query("genre") genre: String): List<Game>
+
+    @GET("games/search")
+    suspend fun searchGames(@Query("keyword") keyword: String): List<Game>
+
 }

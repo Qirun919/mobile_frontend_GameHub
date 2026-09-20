@@ -1,77 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#1B2838">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Top Bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="end"
-            android:padding="8dp">
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="#171A21">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="GamesHub"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
             <ImageButton
                 android:id="@+id/buttonCart"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_gallery"
-                android:background="?attr/selectableItemBackgroundBorderless" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:tint="#FFFFFF" />
 
-            <TextView
-                android:id="@+id/textCartBadge"
+            <EditText
+                android:id="@+id/searchBar"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:hint="Search games..."
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@drawable/search_bar_bg"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:focusable="false"
+                android:clickable="true"
+                android:singleLine="true" />
+
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="top|end"
-                android:background="@drawable/circle_background"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp"
-                android:padding="2dp"
-                android:minWidth="16dp"
-                android:gravity="center"
-                android:visibility="gone" />
+                android:layout_marginStart="8dp">
+
+                <ImageButton
+                    android:id="@+id/buttonCart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:tint="#FFFFFF" />
+
+                <TextView
+                    android:id="@+id/textCartBadge"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/circle_background"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:gravity="center"
+                    android:visibility="gone" />
+
+            </FrameLayout>
+
+
 
         </LinearLayout>
 
+        <!-- Banner ViewPager2 -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/bannerViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="220dp" />
+
+        <!-- Banner Dots -->
+        <LinearLayout
+            android:id="@+id/bannerDots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:padding="8dp" />
+
+        <!-- Genre Filter -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp">
+
+            <LinearLayout
+                android:id="@+id/genreFilterContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical" />
+
+        </HorizontalScrollView>
+
+        <!-- Popular Games -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Popular"
-            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:layout_margin="16dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerPopular"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:paddingStart="16dp" />
+            android:layout_height="200dp"
+            android:paddingStart="16dp"
+            android:clipToPadding="false" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Release"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_margin="16dp" />
-
+        <!-- New Releases -->
         <LinearLayout
-            android:id="@+id/containerNewRelease"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="New Releases"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerNewRelease"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:padding="16dp" />
 
         <Button
             android:id="@+id/buttonShowMore"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Show More"
-            android:layout_margin="16dp" />
+            android:layout_margin="16dp"
+            android:backgroundTint="#4C6B22"
+            android:textColor="#FFFFFF" />
 
     </LinearLayout>
 
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

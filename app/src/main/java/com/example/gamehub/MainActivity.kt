@@ -7,6 +7,7 @@ import com.example.gamehub.fragment.CommunityFragment
 import com.example.gamehub.fragment.FriendsFragment
 import com.example.gamehub.fragment.GamesFragment
 import com.example.gamehub.fragment.ProfileFragment
+import com.example.gamehub.fragment.SearchFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.stripe.android.PaymentConfiguration
 
@@ -51,6 +52,13 @@ class MainActivity : FragmentActivity() {
     private fun switchFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
+            .commit()
+    }
+
+    fun openSearch() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, SearchFragment())
+            .addToBackStack(null)
             .commit()
     }
 }
