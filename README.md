@@ -32,6 +32,8 @@ An Android mobile app for GamesHub, a Steam-style game platform built with Kotli
 
 ## Project Structure
 
+```
+
 app/
 ├── adapters/
 │   ├── BannerAdapter
@@ -69,6 +71,7 @@ app/
 ├── LoginActivity
 └── MainActivity
 
+```
 
 ## Setup
 
