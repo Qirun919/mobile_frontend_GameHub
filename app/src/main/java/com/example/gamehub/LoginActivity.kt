@@ -40,6 +40,8 @@ class LoginActivity : ComponentActivity() {
                     val response = RetrofitInstance.api.login(LoginRequest(email, password))
                     TokenManager.saveToken(response.token)
                     TokenManager.saveUserId(response.userId)
+                    val user = RetrofitInstance.api.getUserById(response.userId)
+                    TokenManager.saveUsername(user.username)
                     Log.d("GameHub", "Login success, token saved")
 
 //                    WebSocketManager.connect()

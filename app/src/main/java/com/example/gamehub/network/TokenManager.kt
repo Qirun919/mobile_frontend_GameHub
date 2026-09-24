@@ -9,6 +9,7 @@ object TokenManager {
 
     private const val KEY_USER_ID = "user_id"
 
+    private const val KEY_USERNAME = "username"
     private lateinit var prefs: SharedPreferences
 
     fun init(context: Context) {
@@ -33,5 +34,14 @@ object TokenManager {
 
     fun getUserId(): String? {
         return prefs.getString(KEY_USER_ID, null)
+    }
+
+
+    fun saveUsername(username: String) {
+        prefs.edit().putString(KEY_USERNAME, username).apply()
+    }
+
+    fun getUsername(): String? {
+        return prefs.getString(KEY_USERNAME, null)
     }
 }

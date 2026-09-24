@@ -37,6 +37,7 @@ class GamesFragment : Fragment() {
     private lateinit var recyclerNewRelease: RecyclerView
     private lateinit var newReleaseAdapter: NewReleaseGameAdapter
     private val newReleaseGames = mutableListOf<Game>()
+    private var currentGenre: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,15 +50,16 @@ class GamesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 搜索栏 → 跳去 SearchFragment
+        // go SearchFragment
         val searchBar = view.findViewById<EditText>(R.id.searchBar)
         searchBar.setOnClickListener {
             (activity as MainActivity).openSearch()
         }
 
-        // Cart 按钮
+        // Cart
         val buttonCart = view.findViewById<ImageButton>(R.id.buttonCart)
         buttonCart.setOnClickListener {
+            Log.d("GameHub", "Cart button clicked!")
             startActivity(Intent(requireContext(), CartActivity::class.java))
         }
 
@@ -80,7 +82,7 @@ class GamesFragment : Fragment() {
             loadNextPage()
         }
 
-        // 加载数据
+        // load
         loadBanner()
         loadGenreFilter(view)
         loadPopularGames(recyclerPopular)
@@ -102,6 +104,17 @@ class GamesFragment : Fragment() {
 
                 // Dots
                 setupBannerDots(dotsContainer, bannerGames.size, viewPager)
+
+                val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                val runnable = object : Runnable {
+                    override fun run() {
+                        val current = viewPager.currentItem
+                        val next = if (current + 1 >= bannerGames.size) 0 else current + 1
+                        viewPager.setCurrentItem(next, true)
+                        handler.postDelayed(this, 3000) // 3 sec
+                    }
+                }
+                handler.postDelayed(runnable, 3000)
 
             } catch (e: Exception) {
                 Log.e("GameHub", "Error loading banner: ${e.message}")
@@ -141,21 +154,15 @@ class GamesFragment : Fragment() {
     private fun loadGenreFilter(view: View) {
         lifecycleScope.launch {
             try {
-                val games = RetrofitInstance.api.getGames()
-                val genres = games.flatMap { it.genres ?: emptyList() }
-                    .mapNotNull { it.description }
-                    .distinct()
-                    .sorted()
-
+                val genres = RetrofitInstance.api.getAllGenres()
                 val container = view.findViewById<LinearLayout>(R.id.genreFilterContainer)
 
-                // "All" 按钮
                 addGenreChip(container, "All", true) {
+                    currentGenre = null
                     resetNewRelease()
                     loadNextPage()
                 }
 
-                // 每个 genre 按钮
                 genres.forEach { genre ->
                     addGenreChip(container, genre, false) {
                         filterByGenre(genre)
@@ -166,6 +173,8 @@ class GamesFragment : Fragment() {
             }
         }
     }
+
+    private var selectedChip: TextView? = null
 
     private fun addGenreChip(
         container: LinearLayout,
@@ -188,22 +197,29 @@ class GamesFragment : Fragment() {
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { setMargins(0, 0, 12, 0) }
             layoutParams = params
-            setOnClickListener { onClick() }
+            setOnClickListener {
+                selectedChip?.let { prev ->
+                    prev.setTextColor(0xFFFFFFFF.toInt())
+                    (prev.background as android.graphics.drawable.GradientDrawable)
+                        .setColor(0xFF2A3F5F.toInt())
+                }
+                setTextColor(0xFF1B2838.toInt())
+                (background as android.graphics.drawable.GradientDrawable)
+                    .setColor(0xFFFFFFFF.toInt())
+                selectedChip = this
+                onClick()
+            }
         }
+
+        if (isSelected) selectedChip = chip
+
         container.addView(chip)
     }
 
     private fun filterByGenre(genre: String) {
-        lifecycleScope.launch {
-            try {
-                val games = RetrofitInstance.api.getGamesByGenre(genre)
-                newReleaseGames.clear()
-                newReleaseGames.addAll(games)
-                newReleaseAdapter.notifyDataSetChanged()
-            } catch (e: Exception) {
-                Log.e("GameHub", "Error filtering by genre: ${e.message}")
-            }
-        }
+        currentGenre = genre
+        resetNewRelease()
+        loadNextPage()
     }
 
     private fun resetNewRelease() {
@@ -230,12 +246,22 @@ class GamesFragment : Fragment() {
     private fun loadNextPage() {
         lifecycleScope.launch {
             try {
-                val newGames = RetrofitInstance.api.getGamesPaged(currentPage, pageSize)
-                newReleaseGames.addAll(newGames)
-                newReleaseAdapter.notifyDataSetChanged()
-                currentPage++
+                val newGames = if (currentGenre == null) {
+                    RetrofitInstance.api.getGamesPaged(currentPage, pageSize)
+                } else {
+                    RetrofitInstance.api.getGamesByGenre(currentGenre!!, currentPage, pageSize) ?: emptyList()
+                }
+
+                if (newGames.isEmpty()) {
+                    view?.findViewById<Button>(R.id.buttonShowMore)?.visibility = View.GONE
+                } else {
+                    newReleaseGames.addAll(newGames)
+                    newReleaseAdapter.notifyDataSetChanged()
+                    currentPage++
+                    view?.findViewById<Button>(R.id.buttonShowMore)?.visibility = View.VISIBLE
+                }
             } catch (e: Exception) {
-                Log.e("GameHub", "Error loading new release: ${e.message}")
+                Log.e("GameHub", "Error: ${e.message}")
             }
         }
     }

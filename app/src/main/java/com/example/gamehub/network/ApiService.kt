@@ -10,6 +10,7 @@ import com.example.gamehub.models.LoginRequest
 import com.example.gamehub.models.LoginResponse
 import com.example.gamehub.models.Message
 import com.example.gamehub.models.Order
+import com.example.gamehub.models.Review
 import com.example.gamehub.models.SignupRequest
 import com.example.gamehub.models.UpdateFriendRequest
 import com.example.gamehub.models.User
@@ -116,9 +117,26 @@ interface ApiService {
     suspend fun confirmOrder(@Path("id") id: String): Order
 
     @GET("games/filter")
-    suspend fun getGamesByGenre(@Query("genre") genre: String): List<Game>
+    suspend fun getGamesByGenre(
+        @Query("genre") genre: String,
+        @Query("page") page: Int,
+        @Query("size") size: Int
+    ): List<Game>?
 
     @GET("games/search")
     suspend fun searchGames(@Query("keyword") keyword: String): List<Game>
+
+    @GET("games/genres")
+    suspend fun getAllGenres(): List<String>
+
+    // review
+    @GET("reviews/game/{gameId}")
+    suspend fun getReviewsByGame(@Path("gameId") gameId: String): List<Review>?
+
+    @POST("reviews")
+    suspend fun addReview(@Body review: Review): Review
+
+    @DELETE("reviews/{id}")
+    suspend fun deleteReview(@Path("id") id: String): retrofit2.Response<Unit>
 
 }
